@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::vectors_tests {
     use std::string::{Self, String};

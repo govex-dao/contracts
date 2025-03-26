@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::conditional_token_tests {
     use sui::test_scenario;

@@ -1,4 +1,5 @@
 // New test module for futarchy::oracle
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::oracle_price_cap_tests {
     use sui::clock;

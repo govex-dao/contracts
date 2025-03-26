@@ -16,6 +16,7 @@ module futarchy::stable_coin {
     }
 }
 
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::factory_tests {
     use sui::test_scenario::{Self as test, ctx};
