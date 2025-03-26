@@ -2,7 +2,6 @@ module futarchy::fee {
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
     use sui::coin::{Self, Coin};
-    use sui::transfer::{public_share_object, public_transfer};
     use sui::event;
     use std::ascii::{String as AsciiString};
     use sui::dynamic_field;
@@ -112,8 +111,8 @@ module futarchy::fee {
             id: object::new(ctx)
         };
 
-        public_transfer(fee_manager, tx_context::sender(ctx));
-        public_transfer(fee_admin_cap, tx_context::sender(ctx));
+        transfer::public_transfer(fee_manager, tx_context::sender(ctx));
+        transfer::public_transfer(fee_admin_cap, tx_context::sender(ctx));
 
         // Consuming the witness ensures one-time initialization.
         let _ = witness;
@@ -134,7 +133,7 @@ module futarchy::fee {
         // Process payment
         let paid_balance = coin::into_balance(payment);
         balance::join(&mut fee_manager.sui_balance, paid_balance);
-        return payment_amount
+        payment_amount
         // Event emission will be handled by specific wrappers
     }
     
@@ -219,7 +218,7 @@ module futarchy::fee {
             timestamp: clock::timestamp_ms(clock)
         });
 
-        public_transfer(withdrawal, sender);
+        transfer::public_transfer(withdrawal, sender);
     }
 
     // Admin function to update DAO creation fee
@@ -397,7 +396,7 @@ module futarchy::fee {
             id: object::new(ctx)
         };
         
-        public_share_object(fee_manager);
-        public_transfer(admin_cap, tx_context::sender(ctx));
+        transfer::public_share_object(fee_manager);
+        transfer::public_transfer(admin_cap, tx_context::sender(ctx));
     }
 }

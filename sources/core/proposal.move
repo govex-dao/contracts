@@ -8,7 +8,6 @@ module futarchy::proposal {
     use futarchy::amm::{Self, LiquidityPool};
     use sui::event;
     use futarchy::oracle;
-    use sui::dynamic_field;
     use std::type_name::{Self};
     use futarchy::liquidity_initialize;
     
@@ -49,7 +48,7 @@ module futarchy::proposal {
 
     // ====== States ======
     const STATE_REVIEW: u8 = 0;
-    const STATE_TRADING: u8 = 1;
+    // const STATE_TRADING: u8 = 1;
     const STATE_FINALIZED: u8 = 2;
 
     /// Core proposal object that owns AMM pools
@@ -446,7 +445,7 @@ module futarchy::proposal {
         proposal: &mut Proposal<AssetType, StableType>
     ): &mut coin_escrow::TokenEscrow<AssetType, StableType> {
         let id = escrow_id(proposal);
-        dynamic_field::borrow_mut(&mut proposal.id, id)
+        sui::dynamic_field::borrow_mut(&mut proposal.id, id)
     }
 
     #[test_only] 
@@ -455,7 +454,7 @@ module futarchy::proposal {
         proposal: &Proposal<AssetType, StableType>
     ): &market_state::MarketState {
         let id = escrow_id(proposal);
-        let escrow: &coin_escrow::TokenEscrow<AssetType, StableType> = dynamic_field::borrow(
+        let escrow: &coin_escrow::TokenEscrow<AssetType, StableType> = sui::dynamic_field::borrow(
             &proposal.id,
             id
         );
