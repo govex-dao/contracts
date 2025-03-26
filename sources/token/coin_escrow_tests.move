@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::coin_escrow_tests {
     use futarchy::coin_escrow;

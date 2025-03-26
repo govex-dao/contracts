@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::market_state_tests {
     use sui::test_scenario::{Self as test};

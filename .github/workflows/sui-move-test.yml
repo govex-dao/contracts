@@ -1,0 +1,28 @@
+name: Sui Move Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Run Sui Move Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install Sui
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install --locked --git https://github.com/MystenLabs/sui.git --branch testnet sui --features tracing
+
+      - name: Run Sui Move tests
+        run: sui move test --warnings-are-errors --lint

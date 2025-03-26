@@ -1,7 +1,6 @@
 module futarchy::oracle {
     /// # Crankless Time Weighted Average Price (TWAP) Oracle
     use sui::clock::{Self, Clock};
-    use std::debug;
     use std::u128;
     use futarchy::math;
 
@@ -116,10 +115,8 @@ module futarchy::oracle {
 
         // Ensure the TWAP delay has finished.
         let delay_threshold = oracle.market_start_time + oracle.twap_start_delay;
-        if (timestamp < delay_threshold) {
-            // Don't update TWAP during TWAP delay period
-
-        } else {
+        // Don't update TWAP during TWAP delay period
+        if (timestamp >= delay_threshold) {
             // If the first observation after delay arrives and last_timestamp is still below the threshold,
             // update it so that accumulation starts strictly after the delay.
             if (oracle.last_timestamp < delay_threshold) {
@@ -233,10 +230,10 @@ module futarchy::oracle {
 
     #[test_only]
     public fun debug_print_state(oracle: &Oracle) {
-        debug::print(&b"Oracle State:");
-        debug::print(&oracle.last_price);
-        debug::print(&oracle.last_timestamp);
-        debug::print(&oracle.total_cumulative_price);
+        std::debug::print(&b"Oracle State:");
+        std::debug::print(&oracle.last_price);
+        std::debug::print(&oracle.last_timestamp);
+        std::debug::print(&oracle.total_cumulative_price);
     }
 
     #[test_only]

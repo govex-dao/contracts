@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::fee_tests {
     use futarchy::fee::{Self, FeeManager, FeeAdminCap};

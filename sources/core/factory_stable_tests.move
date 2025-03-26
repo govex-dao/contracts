@@ -1,3 +1,4 @@
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::test_stable_coin {
     public struct TEST_STABLE_COIN has drop {}
@@ -7,6 +8,7 @@ module futarchy::test_stable_coin {
     }
 }
 
+#[allow(lint(abort_without_constant))]
 #[test_only]
 module futarchy::allowed_stable_tests {
     use sui::test_scenario::{Self as test, ctx};
