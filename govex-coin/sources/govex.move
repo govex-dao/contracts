@@ -27,10 +27,10 @@ module govex::govex {
         let units_per_govex = 10u64.pow(DECIMALS);
         let total_supply_to_mint = TOTAL_GVX_SUPPLY_TO_MINT * units_per_govex;
 
-        // Transfer and mint the total supply of GVX to the publisher.
+        // Transfer and mint the total initial supply of GVX to the publisher.
         coin::mint_and_transfer(&mut treasury_cap, total_supply_to_mint, ctx.sender(), ctx);
 
-        // Return the metadata object, to keep the token metadate mutable.
+        // Return the metadata object, to keep the token metadata mutable.
         transfer::public_transfer(metadata, ctx.sender());
 
         // Return the treasury cap to the publisher, to keep the token mintable.
