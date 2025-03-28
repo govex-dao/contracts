@@ -1,6 +1,6 @@
 module govex::govex {
     use sui::coin;
-	use sui::url;
+    use sui::url;
 
     const TOTAL_GVX_SUPPLY_TO_MINT: u64 = 1_000_000_000; // 1B GVX
     const DECIMALS: u8 = 9;
@@ -12,7 +12,7 @@ module govex::govex {
     /// The type identifier of our coin
     public struct GOVEX has drop {}
 
-    /// Initialize new coin type and make TreasuryCap shared
+    /// Initialize new coin type
     fun init(witness: GOVEX, ctx: &mut TxContext) {
         let (mut treasury_cap, metadata) = coin::create_currency<GOVEX>(
             witness,
