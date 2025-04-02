@@ -1,5 +1,6 @@
 # futarchy
 
-![image](https://github.com/user-attachments/assets/27f2253c-b4c6-4611-9e99-b3e34cd78516)
+<img width="930" alt="image" src="https://github.com/user-attachments/assets/b1e14167-159e-4b8b-b907-2ae48de17842" />
+
 
 
