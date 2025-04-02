@@ -14,7 +14,7 @@ module futarchy::amm_tests {
     const INITIAL_STABLE: u64 = 1000000000; // 1000 units
     const SWAP_AMOUNT: u64 = 100000000; // 100 units (10% of pool)
     const FEE_SCALE: u64 = 10000;
-    const DEFAULT_FEE: u64 = 50; // 0.5%
+    const DEFAULT_FEE: u64 = 30; // 0.3%
 
     
     const BASIS_POINTS: u64 = 1_000_000_000_000;
@@ -150,7 +150,7 @@ module futarchy::amm_tests {
         );
         
         let (asset_reserve, stable_reserve) = amm::get_reserves(&pool);
-        // DEFAULT_FEE is 50 (0.5%)
+        // DEFAULT_FEE is 30 (0.3%)
         let fee_amount = (SWAP_AMOUNT * DEFAULT_FEE) / FEE_SCALE;
         assert!(stable_reserve == INITIAL_STABLE + (SWAP_AMOUNT - fee_amount), 0);
         assert!(asset_reserve == INITIAL_ASSET - amount_out, 1);

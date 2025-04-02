@@ -17,14 +17,14 @@ module futarchy::factory {
     const EALREADY_VERIFIED: u64 = 402;
     const EBAD_WITNESS: u64 = 403;
     const ESTABLE_TYPE_NOT_ALLOWED: u64 = 404;
-    const EZERO_AMM_STEP_SIZE: u64 = 405;
+    const TWAP_TWAP_WINDOW_CAP: u64 = 405;
     const ELONG_TRADING_TIME: u64 = 406;
     const ELONG_REVIEW_TIME: u64 = 407;
     const ELONG_TWAP_DELAY_TIME: u64 = 408;
     const EHIGH_TWAP_THRESHOLD: u64 = 409;
 
     // ======== Constants ========
-    const AMM_MINIMUM_STEP_SIZE: u64 = 1; // Equals 0.01% 
+    const TWAP_MINIMUM_WINDOW_CAP: u64 = 1; // Equals 0.01% 
     const MAX_TRADING_TIME: u64 = 604_800_000;
     const MAX_REVIEW_TIME: u64 = 604_800_000;
     const MAX_TWAP_START_DELAY: u64 = 86_400_000;
@@ -171,7 +171,7 @@ module futarchy::factory {
         let asset_symbol = coin::get_symbol(asset_metadata);
         let stable_symbol = coin::get_symbol(stable_metadata);
 
-        assert!(amm_twap_step_max >= AMM_MINIMUM_STEP_SIZE, EZERO_AMM_STEP_SIZE);
+        assert!(amm_twap_step_max >= TWAP_MINIMUM_WINDOW_CAP, TWAP_TWAP_WINDOW_CAP);
         assert!(review_period_ms <= MAX_REVIEW_TIME, ELONG_REVIEW_TIME);
         assert!(trading_period_ms <= MAX_TRADING_TIME, ELONG_TRADING_TIME);
         assert!(amm_twap_start_delay <= MAX_TWAP_START_DELAY, ELONG_TWAP_DELAY_TIME);
@@ -312,6 +312,11 @@ module futarchy::factory {
         _cap: &FactoryOwnerCap
     ) {
         dao::disable_proposals(dao);
+    }
+
+    public entry fun burn_factory_owner_cap(cap: FactoryOwnerCap) {
+        let FactoryOwnerCap { id } = cap;
+        object::delete(id);
     }
 
     // ======== Helper Functions ========

@@ -144,7 +144,7 @@ module futarchy::swap {
         // Merge existing token if present
 
         assert!(token::outcome(&existing_token) == (outcome_idx as u8), EWRONG_OUTCOME);
-        assert!(token::asset_type(&existing_token) == 0, EWRONG_TOKEN_TYPE); // 1 for asset token
+        assert!(token::asset_type(&existing_token) == 1, EWRONG_TOKEN_TYPE); 
 
         let mut existing_token_in_vector = vector::empty();
         vector::push_back(&mut existing_token_in_vector, existing_token);
@@ -193,7 +193,7 @@ module futarchy::swap {
 
 
         assert!(token::outcome(&existing_token) == (outcome_idx as u8), EWRONG_OUTCOME);
-        assert!(token::asset_type(&existing_token) == 1, EWRONG_TOKEN_TYPE); // 1 for stable token
+        assert!(token::asset_type(&existing_token) == 0, EWRONG_TOKEN_TYPE);
 
         let mut existing_token_in_vector = vector::empty();
         vector::push_back(&mut existing_token_in_vector, existing_token);
