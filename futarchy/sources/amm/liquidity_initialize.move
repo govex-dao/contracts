@@ -1,11 +1,15 @@
 module futarchy::liquidity_initialize {
+    // === Introduction ===
+    // Method to initialize AMM liquidity
+
+    // === Imports ===
     use sui::clock::{Clock};
     use futarchy::coin_escrow::{Self, TokenEscrow};
     use futarchy::conditional_token::{Self as token};
     use futarchy::amm::{Self, LiquidityPool};
     use sui::balance::{Balance};
 
-   
+    // === Public Functions ===
     public fun create_outcome_markets<AssetType, StableType>(
         escrow: &mut TokenEscrow<AssetType, StableType>,
         outcome_count: u64,

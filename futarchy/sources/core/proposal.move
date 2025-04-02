@@ -1,4 +1,8 @@
 module futarchy::proposal {
+    // === Introduction ===
+    // This defines the core proposal logic and details
+    
+    // === Imports ===
     use sui::clock::{Self, Clock};
     use std::ascii::{String as AsciiString};
     use std::string::{String};
@@ -12,7 +16,7 @@ module futarchy::proposal {
     use std::type_name::{Self};
     use futarchy::liquidity_initialize;
     
-    // ====== Error Codes ======
+    // === Errors ===
     const EINVALID_AMOUNT: u64 = 1501;
     const EINVALID_STATE: u64 = 1502;
     const EINVALID_LIQUIDITY: u64 = 1503;
@@ -21,38 +25,13 @@ module futarchy::proposal {
     const EPOOL_NOT_FOUND: u64 = 1506;
     const EINVALID_POOL_LENGTH: u64 = 1507;
 
-    // ====== Events ======
-    public struct ProposalCreated has copy, drop {
-        proposal_id: ID,
-        dao_id: ID,
-        proposer: address,
-        outcome_count: u64,
-        outcome_messages: vector<String>,
-        created_at: u64,
-        market_state_id: ID,
-        escrow_id: ID,
-        asset_value: u64,
-        stable_value: u64,
-        asset_type: AsciiString,
-        stable_type: AsciiString,
-        review_period_ms: u64,
-        trading_period_ms: u64,
-        title: String,     
-        details: String,   
-        metadata: String,
-        initial_outcome_amounts: Option<vector<u64>>,   
-        twap_start_delay: u64,
-        twap_step_max: u64,
-        twap_threshold: u64,
-        oracle_ids: vector<ID>, // NEW: List of oracle IDs for each outcome
-    }
-
-    // ====== States ======
+    // === Constants ===
     const STATE_REVIEW: u8 = 0;
     const STATE_TRADING: u8 = 1;
     const STATE_FINALIZED: u8 = 2;
 
-    /// Core proposal object that owns AMM pools
+    // === Structs ===
+     // Core proposal object that owns AMM pools
     public struct Proposal<phantom AssetType, phantom StableType> has key, store {
         id: UID,
         created_at: u64,
@@ -78,7 +57,33 @@ module futarchy::proposal {
         winning_outcome: Option<u64>,
     }
 
-    // ====== Creation ======
+    // === Constants ===
+    public struct ProposalCreated has copy, drop {
+        proposal_id: ID,
+        dao_id: ID,
+        proposer: address,
+        outcome_count: u64,
+        outcome_messages: vector<String>,
+        created_at: u64,
+        market_state_id: ID,
+        escrow_id: ID,
+        asset_value: u64,
+        stable_value: u64,
+        asset_type: AsciiString,
+        stable_type: AsciiString,
+        review_period_ms: u64,
+        trading_period_ms: u64,
+        title: String,     
+        details: String,   
+        metadata: String,
+        initial_outcome_amounts: Option<vector<u64>>,   
+        twap_start_delay: u64,
+        twap_step_max: u64,
+        twap_threshold: u64,
+        oracle_ids: vector<ID>, // NEW: List of oracle IDs for each outcome
+    }
+
+    // === Public Functions ===
     #[allow(lint(share_owned))]
     public fun create<AssetType, StableType>(
         dao_id: ID,
@@ -440,6 +445,7 @@ module futarchy::proposal {
         proposal.winning_outcome = option::some(outcome);
     }
 
+    // === Test Functions ===
     #[test_only]
     /// Gets a mutable reference to the token escrow of the proposal
     public fun test_get_coin_escrow<AssetType, StableType>(

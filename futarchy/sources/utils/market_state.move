@@ -1,4 +1,8 @@
 module futarchy::market_state {
+    // === Introduction ===
+    // This tracks proposal life cycle and acts a source of truth for proposal state
+    
+    // === Imports ===
     use std::string::{String};
     use sui::event;
     use sui::clock::{Self, Clock};
@@ -12,7 +16,28 @@ module futarchy::market_state {
     const ETRADING_NOT_STARTED: u64 = 906;
     const ETRADING_ALREADY_STARTED: u64 = 907;
 
-    // ======== Events ========
+    // === Structs ===
+    public struct MarketStatus has store, copy, drop {
+        trading_started: bool,
+        trading_ended: bool,
+        finalized: bool
+    }
+
+    public struct MarketState has key, store {
+        id: UID,
+        market_id: ID,
+        dao_id: ID,
+        outcome_count: u64,
+        outcome_messages: vector<String>,
+        status: MarketStatus,
+        winning_outcome: Option<u64>,
+        creation_time: u64,
+        trading_start: u64,
+        trading_end: Option<u64>,
+        finalization_time: Option<u64>,
+    }
+
+    // === Events ===
     public struct TradingStartedEvent has copy, drop {
         market_id: ID,
         start_time: u64,
@@ -29,29 +54,7 @@ module futarchy::market_state {
         timestamp_ms: u64
     }
 
-    // ======== State Enums ========
-    public struct MarketStatus has store, copy, drop {
-        trading_started: bool,
-        trading_ended: bool,
-        finalized: bool
-    }
-
-    // ======== Core State Struct ========
-    public struct MarketState has key, store {
-        id: UID,
-        market_id: ID,
-        dao_id: ID,
-        outcome_count: u64,
-        outcome_messages: vector<String>,
-        status: MarketStatus,
-        winning_outcome: Option<u64>,
-        creation_time: u64,
-        trading_start: u64,
-        trading_end: Option<u64>,
-        finalization_time: Option<u64>,
-    }
-
-    // ======== Creation and Initialization ========
+    // === Public Functions ===
     public(package) fun new(
         market_id: ID,
         dao_id: ID,
@@ -83,7 +86,6 @@ module futarchy::market_state {
         state
     }
 
-    // ======== Trading State Management ========
     public(package) fun start_trading(
         state: &mut MarketState,
         duration_ms: u64,
@@ -112,7 +114,6 @@ module futarchy::market_state {
     public fun assert_in_trading_or_pre_trading(state: &MarketState) {
         assert!(!state.status.trading_ended, ETRADING_ALREADY_ENDED);
         assert!(!state.status.finalized, EALREADY_FINALIZED);
-        // No need to check trading_started - it can be either true or false
     }
 
 
@@ -133,7 +134,6 @@ module futarchy::market_state {
         });
     }
 
-    // ======== Market Finalization ========
     public(package) fun finalize(
         state: &mut MarketState,
         winner: u64,
@@ -155,6 +155,7 @@ module futarchy::market_state {
         });
     }
 
+    // ======== Validators ========
     public fun assert_market_finalized(state: &MarketState) {
         assert!(state.status.finalized, ENOT_FINALIZED);
     }
@@ -162,15 +163,12 @@ module futarchy::market_state {
     public fun assert_not_finalized(state: &MarketState) {
         assert!(!state.status.finalized, EALREADY_FINALIZED);
     }
-
-    // ======== Validators ========
     
     public fun validate_outcome(state: &MarketState, outcome: u64) {
         assert!(outcome < state.outcome_count, EOUTCOME_OUT_OF_BOUNDS);
     }
 
     // ======== Getter Functions ========
-
     public fun market_id(state: &MarketState): ID {
         state.market_id
     }
@@ -201,6 +199,7 @@ module futarchy::market_state {
         *vector::borrow(&state.outcome_messages, outcome_idx)
     }
 
+    // === Test Functions ===
     #[test_only]
     public fun create_for_testing(outcomes: u64, ctx: &mut TxContext): MarketState {
         let dummy_id = object::new(ctx);

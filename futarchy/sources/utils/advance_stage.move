@@ -1,4 +1,8 @@
 module futarchy::advance_stage {
+    // === Introduction ===
+    // This handles advancing proposal stages 
+    
+    // === Imports ===
     use sui::clock::{Self, Clock};
     use futarchy::market_state::{Self, MarketState};
     use futarchy::coin_escrow::{Self, TokenEscrow};
@@ -7,14 +11,17 @@ module futarchy::advance_stage {
     use futarchy::proposal::{Self, Proposal};
     use futarchy::amm;
     
-    // ====== Error Codes ======
+    // === Errors ===
     const EINVALID_STATE_TRANSITION: u64 = 1301;
     const EINVALID_STATE: u64 = 1302;
 
-    // ======== Constants ========
+    // === Constants ===
     const TWAP_BASIS_POINTS: u128 = 100_000;
+    const STATE_REVIEW: u8 = 0;
+    const STATE_TRADING: u8 = 1;
+    const STATE_FINALIZED: u8 = 2;
 
-    // ====== Events ======
+    // === Events ===
     public struct ProposalStateChanged has copy, drop {
         proposal_id: ID,
         old_state: u8,
@@ -42,13 +49,7 @@ module futarchy::advance_stage {
         timestamp_ms: u64
     }
 
-    // ====== States ======
-    const STATE_REVIEW: u8 = 0;
-    const STATE_TRADING: u8 = 1;
-    const STATE_FINALIZED: u8 = 2;
-
-
-    // ====== State Management ======
+    // === Public Functions ===
     public fun collect_protocol_fees<AssetType, StableType>(
         proposal: &mut Proposal<AssetType, StableType>,
         escrow: &mut TokenEscrow<AssetType, StableType>,

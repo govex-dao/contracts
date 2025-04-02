@@ -1,13 +1,17 @@
 module futarchy::math {
+    // === Introduction ===
+    // Integer type conversion and integer methods
+
+    // === Imports ===
     use std::u128;
     use std::u64;
 
-    // ======== Error Constants ========
+   // === Errors ===
     const EOVERFLOW: u64 = 1001;
     const EDIVIDE_BY_ZERO: u64 = 1002;
     const EVALUE_EXCEEDS_U64: u64 = 1003;
     
-    /// Safely multiplies two u64 values and divides by a third, checking for overflow
+    /// Multiplies two u64 values and divides by a third, checking for overflow
     /// Returns (a * b) / c
     public fun mul_div_to_64(a: u64, b: u64, c: u64): u64 {
         assert!(c != 0, EDIVIDE_BY_ZERO);
@@ -45,7 +49,7 @@ module futarchy::math {
         (result as u64)
     }
 
-    // Safe saturating addition that won't overflow
+    // Saturating addition that won't overflow
     public fun saturating_add(a: u128, b: u128): u128 {
         if (u128::max_value!() - a < b) {
             u128::max_value!()
@@ -54,7 +58,7 @@ module futarchy::math {
         }
     }
 
-    // Safe saturating subtraction that won't underflow
+    // Saturating subtraction that won't underflow
     public fun saturating_sub(a: u128, b: u128): u128 {
         if (a < b) {
             0

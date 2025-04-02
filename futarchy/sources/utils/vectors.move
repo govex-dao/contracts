@@ -1,8 +1,12 @@
 module futarchy::vectors {
+    // === Introduction ===
+    //  Vector Methods and processing
+
+    // === Imports ===
     use std::string::{Self, String};
     use sui::vec_set; //vec_set actions have linear complexity. For > 100 len vec use custom hash map
 
-    // Combined check for both length constraints and uniqueness
+    // Combined check that a vector contains only unique elements and that all the elements are less then a certain length
     public fun check_valid_outcomes(outcome: vector<String>, max_length: u64): bool {
 
         let length = vector::length(&outcome);

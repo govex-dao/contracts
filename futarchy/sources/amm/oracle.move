@@ -1,5 +1,8 @@
 module futarchy::oracle {
-    /// # Crankless Time Weighted Average Price (TWAP) Oracle
+    // === Introduction ===
+    // Crankless Time Weighted Average Price (TWAP) Oracle
+
+    // === Imports ===
     use sui::clock::{Self, Clock};
     use std::debug;
     use std::u128;

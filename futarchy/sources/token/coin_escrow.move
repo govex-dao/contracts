@@ -1,4 +1,8 @@
 module futarchy::coin_escrow {
+    // === Introduction ===
+    // Tracks and stores coins
+    
+    // === Imports ===
     use sui::balance::{Self, Balance};
     use sui::clock::Clock;
     use futarchy::conditional_token::{Self as token, ConditionalToken, Supply};
@@ -6,11 +10,7 @@ module futarchy::coin_escrow {
     use sui::coin::{Self, Coin};
     use sui::event;
 
-    // ======== Constants ========
-    const TOKEN_TYPE_STABLE: u8 = 1;
-    const TOKEN_TYPE_ASSET: u8 = 0;
-    
-    // ======== Error Constants ========
+    // === Errors ===
     const EINCORRECT_SEQUENCE: u64 = 701; 
     const EWRONG_MARKET: u64 = 702;
     const EWRONG_TOKEN_TYPE: u64 = 703;
@@ -21,8 +21,23 @@ module futarchy::coin_escrow {
     const ENOT_ENOUGH_LIQUIDITY: u64 = 708;
     const EINSUFFICIENT_BALANCE: u64 = 709;
 
-    // ======= Events ==========
+    // === Constants ===
+    const TOKEN_TYPE_STABLE: u8 = 1;
+    const TOKEN_TYPE_ASSET: u8 = 0;
 
+    // === Structs ===
+    public struct TokenEscrow<phantom AssetType, phantom StableType> has key, store {
+        id: UID,
+        market_state: MarketState,
+        // Central balances used for tokens and liquidity
+        escrowed_asset: Balance<AssetType>,
+        escrowed_stable: Balance<StableType>,
+        // Token supplies for tracking issuance
+        outcome_asset_supplies: vector<Supply>,
+        outcome_stable_supplies: vector<Supply>
+    }
+    
+    // === Events ===
     public struct LiquidityWithdrawal has copy, drop {
             escrowed_asset: u64,
             escrowed_stable: u64,
@@ -37,19 +52,7 @@ module futarchy::coin_escrow {
             stable_amount: u64,
     }
 
-    public struct TokenEscrow<phantom AssetType, phantom StableType> has key, store {
-        id: UID,
-        market_state: MarketState,
-        // Central balances used for tokens and liquidity
-        escrowed_asset: Balance<AssetType>,
-        escrowed_stable: Balance<StableType>,
-        // Token supplies for tracking issuance
-        outcome_asset_supplies: vector<Supply>,
-        outcome_stable_supplies: vector<Supply>
-    }
-
-    // === Creation and Initialization ===
-
+    // === Public Functions ===
     public fun new<AssetType, StableType>(
         market_state: MarketState,
         ctx: &mut TxContext
@@ -640,7 +643,6 @@ module futarchy::coin_escrow {
     }
 
     // === Internal Helpers ===
-
     public fun get_balances<AssetType, StableType>(
         escrow: &TokenEscrow<AssetType, StableType>
     ): (u64, u64) {

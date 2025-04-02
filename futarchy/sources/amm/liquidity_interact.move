@@ -1,4 +1,8 @@
 module futarchy::liquidity_interact {
+    // === Introduction ===
+    // Methods to interact with AMM liquidity
+    
+    // === Imports ===
     use sui::clock::{Clock};
     use futarchy::market_state::{Self};
     use futarchy::coin_escrow::{Self, TokenEscrow};

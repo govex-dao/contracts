@@ -1,4 +1,8 @@
 module futarchy::dao {
+    // === Introduction ===
+    // This defines the DAO type
+    
+    // === Imports ===
     use std::string::{Self, String};
     use std::ascii::{Self, String as AsciiString};
     use sui::table::{Self, Table};
@@ -14,7 +18,7 @@ module futarchy::dao {
     use futarchy::coin_escrow;
     use futarchy::fee;
 
-    // ======== Error Constants ========
+    // === Errors ===
 
     const EPROPOSAL_EXISTS: u64 = 301;
     const EUNAUTHORIZED: u64 = 302;
@@ -37,28 +41,17 @@ module futarchy::dao {
     const EONE_OUTCOME: u64 = 319;
     const EINVALID_AMOUNT: u64 = 320;
 
-    // ======== Constants ========
+    // === Constants ===
     const TITLE_MAX_LENGTH: u64 = 512;
     const METADATA_MAX_LENGTH: u64 = 1024;
     const DETAILS_MAX_LENGTH: u64 = 16384; // 16KB
     const MIN_OUTCOMES: u64 = 2;
     const MAX_OUTCOMES: u64 = 2;
     const MAX_RESULT_LENGTH: u64 = 1024;
-    const MIN_AMM_SAFE_AMOUNT: u64 = 1000; // under 50 swap will be broken
-    const MAX_DECIMALS: u8 = 21; // Common max for most tokens
+    const MIN_AMM_SAFE_AMOUNT: u64 = 1000; // under 50 swap will have significant slippage
+    const MAX_DECIMALS: u8 = 21; // Common max for most token pairs
 
-    // ======== Structs ========
-     /// The coin_type string must be in the following format:
-    /// - Must NOT include "0x" prefix
-    /// - Address must be padded to 32 bytes (64 characters) with leading zeros
-    /// - Format: "{padded_address}::{module}::{type}"
-    /// 
-    /// Examples:
-    /// - For SUI: "0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"
-    /// - For custom coin: "a120dcbf48d1791fe6e93913bcb374c47d84f52d2edb709172e1a875a5215547::my_coin::MY_COIN"
-    /// 
-    /// This format must match what type_name::into_string(type_name::get<T>) would produce.
-    /// If the format doesn't match, create_dao will fail with EINVALID_ASSET_TYPE or EINVALID_STABLE_TYPE.
+    // === Structs ===
     public struct DAO has key, store {
         id: UID,
         asset_type: AsciiString,
@@ -102,7 +95,7 @@ module futarchy::dao {
         market_state_id: ID
     }
 
-    // ======== Events ========
+    // === Events ===
     public struct DAOCreated has copy, drop {
         dao_id: ID,
         min_asset_amount: u64,
@@ -135,7 +128,7 @@ module futarchy::dao {
         timestamp: u64
     }
 
-    // ======== Creation Functions ========
+    // === Creation Functions ===
     public fun create<AssetType, StableType>(
         min_asset_amount: u64,
         min_stable_amount: u64,
@@ -424,8 +417,7 @@ module futarchy::dao {
     public fun is_verified(dao: &DAO): bool { dao.verified }
     public fun get_attestation_url(dao: &DAO): &String { &dao.attestation_url }    
 
-    // ======== Query Functions ========
-
+    // === Getters ===
     public fun get_amm_config(dao: &DAO): (u64, u64) {
         (
             dao.amm_twap_start_delay,
@@ -473,26 +465,18 @@ module futarchy::dao {
         &info.description
     }
 
-    /// Gets the asset type string of the DAO
-    /// Returns the fully qualified type name as an AsciiString
     public fun get_asset_type(dao: &DAO): &AsciiString {
         &dao.asset_type
     }
 
-    /// Gets the stable type string of the DAO
-    /// Returns the fully qualified type name as an AsciiString
     public fun get_stable_type(dao: &DAO): &AsciiString {
         &dao.stable_type
     }
 
-    /// Gets both asset and stable type strings of the DAO
-    /// Returns a tuple of references to the type AsciiStrings
     public fun get_types(dao: &DAO): (&AsciiString, &AsciiString) {
         (&dao.asset_type, &dao.stable_type)
     }
 
-    /// Gets the name of the DAO
-    /// Returns a reference to the DAO name as an AsciiString
     public fun get_name(dao: &DAO): &AsciiString {
         &dao.dao_name
     }
@@ -505,8 +489,9 @@ module futarchy::dao {
         dao.proposal_creation_enabled
     }
 
+    // === Test Functions ===
     #[test_only]
-    /// Test helper function to set proposal state directly
+    // Test helper function to set proposal state directly
     public fun test_set_proposal_state(dao: &mut DAO, proposal_id: ID, state: u8) {
         let info = table::borrow_mut(&mut dao.proposals, proposal_id);
         info.state = state;

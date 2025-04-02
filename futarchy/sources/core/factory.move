@@ -1,4 +1,8 @@
 module futarchy::factory {
+    // === Introduction ===
+    // This is the entry point and Main Factory of the protocol. It define admin capabilities and creates DAOs
+    
+    // === Imports ===
     use sui::sui::SUI;
     use sui::transfer::{ public_share_object, public_transfer};
     use sui::event;
@@ -12,7 +16,7 @@ module futarchy::factory {
     use std::type_name;
     use futarchy::fee;
 
-    // ======== Error Constants ========
+    // === Errors ===
     const EPAUSED: u64 = 401;
     const EALREADY_VERIFIED: u64 = 402;
     const EBAD_WITNESS: u64 = 403;
@@ -23,14 +27,16 @@ module futarchy::factory {
     const ELONG_TWAP_DELAY_TIME: u64 = 408;
     const EHIGH_TWAP_THRESHOLD: u64 = 409;
 
-    // ======== Constants ========
+    // === Constants ===
     const TWAP_MINIMUM_WINDOW_CAP: u64 = 1; // Equals 0.01% 
     const MAX_TRADING_TIME: u64 = 604_800_000;
     const MAX_REVIEW_TIME: u64 = 604_800_000;
     const MAX_TWAP_START_DELAY: u64 = 86_400_000;
     const MAX_TWAP_THRESHOLD: u64 = 1_000_000; //equivilant to requiring 10x increase in price to pass
 
-    // ======== Core Structs ========
+    // === Structs ===
+    public struct FACTORY has drop { }
+
     public struct Factory has key, store {
         id: UID,
         dao_count: u64,
@@ -47,8 +53,7 @@ module futarchy::factory {
         id: UID
     }
 
-    // ======== Events ========
-
+    // === Events ===
     public struct VerificationRequested has copy, drop {
         dao_id: ID,
         verification_id: ID,
@@ -78,9 +83,6 @@ module futarchy::factory {
         admin: address,
         timestamp: u64
     }
-
-    // ======== New Witness Type ========
-    public struct FACTORY has drop { }
 
     // ======== Constructor ========
     fun init(witness: FACTORY, ctx: &mut TxContext) {
@@ -341,7 +343,7 @@ module futarchy::factory {
         vec_set::contains(&factory.allowed_stable_types, &type_str)
     }
 
-    // ======== Test Functions ========
+    // === Test Functions ===
     #[test_only]
     public fun create_factory(ctx: &mut TxContext) {
         let factory = Factory {
