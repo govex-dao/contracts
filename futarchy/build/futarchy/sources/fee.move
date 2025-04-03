@@ -1,4 +1,8 @@
 module futarchy::fee {
+    // === Introduction ===
+    // Manages all fees earnt by the protocol. It is also the interface for admin fee withdrawal
+    
+    // === Imports ===
     use sui::balance::{Self, Balance};
     use sui::sui::SUI;
     use sui::coin::{Self, Coin};
@@ -9,17 +13,17 @@ module futarchy::fee {
     use sui::clock::{Self, Clock};
     use std::type_name;
 
-    // ======== Error Constants ========
+    // === Errors ===
     const EINVALID_PAYMENT: u64 = 801;
     const ESTABLE_TYPE_NOT_FOUND: u64 = 802;
     const EBAD_WITNESS: u64 = 803;
     
-    // ======== Constants ========
+    // === Constants ===
     const DEFAULT_DAO_CREATION_FEE: u64 = 10_000;
     const DEFAULT_PROPOSAL_CREATION_FEE: u64 = 10_000;
     const DEFAULT_VERIFICATION_FEE: u64 = 10_000;
 
-    // ======== Core Structs ========
+    // === Structs ===
     
     public struct FEE has drop { }
 
@@ -35,7 +39,7 @@ module futarchy::fee {
         id: UID
     }
 
-    // ======== Events ========
+    // === Events ===
     public struct FeesWithdrawn has copy, drop {
         amount: u64,
         recipient: address,
@@ -95,7 +99,7 @@ module futarchy::fee {
         timestamp: u64
     }
 
-    // ======== Constructor ========
+    // === Public Functions ===
     fun init(witness: FEE, ctx: &mut TxContext) {
         // Verify that the witness is valid and one-time only.
         assert!(sui::types::is_one_time_witness(&witness), EBAD_WITNESS);
@@ -119,8 +123,7 @@ module futarchy::fee {
         let _ = witness;
     }
 
-    // ======== Fee Collection Functions ========
-
+    // === Fee Collection Functions ===
     // Generic internal fee collection function
     fun deposit_payment(
         fee_manager: &mut FeeManager,
@@ -196,8 +199,7 @@ module futarchy::fee {
         });
     }
 
-    // ======== Admin Functions ========
-    
+    // === Admin Functions ===
     // Admin function to withdraw fees
     public entry fun withdraw_all_fees(
         fee_manager: &mut FeeManager,
@@ -355,8 +357,7 @@ module futarchy::fee {
     }
 
 
-    // ======== View Functions ========
-    
+    // === View Functions ===
     public fun get_dao_creation_fee(fee_manager: &FeeManager): u64 {
         fee_manager.dao_creation_fee
     }

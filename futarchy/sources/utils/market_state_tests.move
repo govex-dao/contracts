@@ -503,4 +503,98 @@ module futarchy::market_state_tests {
         };
         test::end(scenario);
     }
+
+    // Tests for edge cases with timestamps
+    #[test]
+    fun test_trading_with_zero_duration() {
+        let mut scenario = test::begin(ADMIN);
+        {
+            let mut clock = create_clock(START_TIME, test::ctx(&mut scenario));
+            let mut market = create_test_market(test::ctx(&mut scenario), &clock);
+            
+            // Start trading with zero duration
+            market_state::start_trading(&mut market, 0, &clock);
+            
+            // Check that trading started
+            assert!(market_state::is_trading_active(&market), 0);
+            
+            // Clean up
+            market_state::destroy_for_testing(market);
+            clock::destroy_for_testing(clock);
+        };
+        test::end(scenario);
+    }
+
+    #[test]
+    fun test_trading_with_very_short_duration() {
+        let mut scenario = test::begin(ADMIN);
+        {
+            let mut clock = create_clock(START_TIME, test::ctx(&mut scenario));
+            let mut market = create_test_market(test::ctx(&mut scenario), &clock);
+            
+            // Start trading with 1ms duration
+            market_state::start_trading(&mut market, 1, &clock);
+            
+            // Check that trading started
+            assert!(market_state::is_trading_active(&market), 0);
+            
+            // Advance clock just past the end time
+            clock::set_for_testing(&mut clock, START_TIME + 2);
+            
+            // End trading should still work
+            market_state::end_trading(&mut market, &clock);
+            assert!(!market_state::is_trading_active(&market), 0);
+            
+            // Clean up
+            market_state::destroy_for_testing(market);
+            clock::destroy_for_testing(clock);
+        };
+        test::end(scenario);
+    }
+
+    #[test]
+    fun test_trading_with_maximum_duration() {
+        let mut scenario = test::begin(ADMIN);
+        {
+            let clock = create_clock(START_TIME, test::ctx(&mut scenario));
+            let mut market = create_test_market(test::ctx(&mut scenario), &clock);
+            
+            // Start trading with a very large duration
+            // Using a large but safe value to avoid overflow concerns
+            let large_duration: u64 = 9223372036854775807; // i64::MAX as u64
+            market_state::start_trading(&mut market, large_duration, &clock);
+            
+            // Check that trading started
+            assert!(market_state::is_trading_active(&market), 0);
+            
+            // Clean up
+            market_state::destroy_for_testing(market);
+            clock::destroy_for_testing(clock);
+        };
+        test::end(scenario);
+    }
+
+    // Test for finalization assertion
+    #[test]
+    #[expected_failure(abort_code = futarchy::market_state::ETRADING_ALREADY_ENDED)]
+    fun test_assert_in_trading_or_pre_trading_fails_when_finalized() {
+        let mut scenario = test::begin(ADMIN);
+        {
+            let clock = create_clock(START_TIME, test::ctx(&mut scenario));
+            let mut market = create_test_market(test::ctx(&mut scenario), &clock);
+            
+            // Complete the market lifecycle
+            market_state::start_trading(&mut market, 1000000, &clock);
+            market_state::end_trading(&mut market, &clock);
+            market_state::finalize(&mut market, 0, &clock);
+            
+            // Should fail as market is already finalized
+            market_state::assert_in_trading_or_pre_trading(&market);
+            
+            // Clean up
+            market_state::destroy_for_testing(market);
+            clock::destroy_for_testing(clock);
+        };
+        test::end(scenario);
+    }
 }

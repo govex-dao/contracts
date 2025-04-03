@@ -1,4 +1,8 @@
 module futarchy::amm {
+    // === Introduction ===
+    // This a Uniswap V2-style XY=K AMM implementation with controlled liquidity methods.
+
+    // === Imports ===
     use sui::clock::{Self, Clock};
     use sui::event;
     use futarchy::math;
@@ -6,7 +10,7 @@ module futarchy::amm {
     use futarchy::oracle::{Self, Oracle};
     use std::u64;
 
-    // ======== Error Constants ========
+    // === Errors ===
     const EPOOL_EMPTY: u64 = 101;
     const EEXCESSIVE_SLIPPAGE: u64 = 102;
     const EDIV_BY_ZERO: u64 = 103;
@@ -15,13 +19,26 @@ module futarchy::amm {
     const EZERO_AMOUNT: u64 = 106;
     const ELOW_LIQUIDITY: u64 = 107;
 
-    // ======== Constants ========
+    // === Constants ===
     const FEE_SCALE: u64 = 10000;
     const DEFAULT_FEE: u64 = 30; // 0.3%
     const BASIS_POINTS: u64 = 1_000_000_000_000; // 10^12 we need to keep this for saftey to values don't round to 0
     const MINIMUM_LIQUIDITY: u128 = 1000;
 
-    // ======== Events ========
+    // === Structs ===
+    public struct LiquidityPool has key, store {
+        id: UID,
+        market_id: ID,
+        outcome_idx: u8,
+        asset_reserve: u64,
+        stable_reserve: u64,
+        k: u128,
+        fee_percent: u64,
+        oracle: Oracle,
+        protocol_fees: u64, // Track accumulated stable fees
+    }
+
+    // === Events ===
     public struct SwapEvent has copy, drop {
         market_id: ID,
         outcome: u8,
@@ -36,20 +53,7 @@ module futarchy::amm {
         timestamp: u64
     }
 
-    // ======== Pool ========
-    public struct LiquidityPool has key, store {
-        id: UID,
-        market_id: ID,
-        outcome_idx: u8,
-        asset_reserve: u64,
-        stable_reserve: u64,
-        k: u128,
-        fee_percent: u64,
-        oracle: Oracle,
-        protocol_fees: u64, // Track accumulated stable fees
-    }
-
-    // ======== Pool Creation ========
+    // === Public Functions ===
     public(package) fun new_pool(
         state: &MarketState,
         outcome_idx: u8,
@@ -102,7 +106,8 @@ module futarchy::amm {
 
         pool
     }
-    // ======== Core Swap Functions ========
+
+    // === Core Swap Functions ===
     public(package) fun swap_asset_to_stable(
         pool: &mut LiquidityPool,
         state: &MarketState,
@@ -248,8 +253,8 @@ module futarchy::amm {
 
         amount_out
     }
-    // ======== Liquidity Functions ========
 
+    // === Liquidity Functions ===
     public(package) fun empty_all_amm_liquidity(
         pool: &mut LiquidityPool,
         _ctx: &mut TxContext
@@ -268,7 +273,7 @@ module futarchy::amm {
         (asset_amount_out, stable_amount_out)
     }
 
-    // ======== Oracle Functions ========
+    // === Oracle Functions ===
     // Update new_oracle to be simpler:
     fun write_observation(
         oracle: &mut Oracle,
@@ -282,7 +287,7 @@ module futarchy::amm {
         &pool.oracle
     }
 
-    // ======== View Functions ========
+    // === View Functions ===
     public fun get_reserves(pool: &LiquidityPool): (u64, u64) {
         (pool.asset_reserve, pool.stable_reserve)
     }
@@ -330,7 +335,6 @@ module futarchy::amm {
             math::mul_div_to_128(ideal_out - amount_out, FEE_SCALE, ideal_out)
         }
     }
-
 
     // Update the LiquidityPool struct price calculation to use TWAP:
     public fun get_current_price(pool: &LiquidityPool): u128 {
@@ -395,7 +399,7 @@ module futarchy::amm {
         pool.protocol_fees = 0;
     }
 
-    // ======== Tests ========
+    // === Test Functions ===
     #[test_only]
     public fun create_test_pool(
         market_id: ID,
@@ -437,7 +441,6 @@ module futarchy::amm {
             protocol_fees: _,
         } = pool;
         object::delete(id);
-        // Add a function in oracle.move to properly clean up the Oracle
         oracle::destroy_for_testing(oracle);
     }
 }

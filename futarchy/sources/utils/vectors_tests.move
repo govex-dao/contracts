@@ -196,4 +196,50 @@ module futarchy::vectors_tests {
         vector::push_back(&mut v, string::utf8(b"another"));
         assert!(vectors::check_valid_outcomes(v, 1000), 0);
     }
+
+    // ===== Special character tests =====
+    #[test]
+    fun test_strings_with_whitespace() {
+        let mut v = vector::empty<String>();
+        vector::push_back(&mut v, string::utf8(b"no space"));
+        vector::push_back(&mut v, string::utf8(b"no\tspace")); // With tab
+        vector::push_back(&mut v, string::utf8(b"no\nspace")); // With newline
+        assert!(vectors::check_valid_outcomes(v, 10), 0);
+    }
+
+    #[test]
+    fun test_strings_with_special_characters() {
+        let mut v = vector::empty<String>();
+        vector::push_back(&mut v, string::utf8(b"test!@#$%"));
+        vector::push_back(&mut v, string::utf8(b"test&*()_+"));
+        assert!(vectors::check_valid_outcomes(v, 10), 0);
+    }
+
+    // ===== Near-identical strings tests =====
+    #[test]
+    fun test_substrings() {
+        let mut v = vector::empty<String>();
+        vector::push_back(&mut v, string::utf8(b"test"));
+        vector::push_back(&mut v, string::utf8(b"test1")); // Superstring of "test"
+        vector::push_back(&mut v, string::utf8(b"tes"));   // Substring of "test"
+        assert!(vectors::check_valid_outcomes(v, 5), 0);
+    }
+
+    #[test]
+    fun test_one_character_difference() {
+        let mut v = vector::empty<String>();
+        vector::push_back(&mut v, string::utf8(b"string1"));
+        vector::push_back(&mut v, string::utf8(b"string2")); // Differs by one character
+        assert!(vectors::check_valid_outcomes(v, 10), 0);
+    }
+
+    // ===== Case sensitivity explicit test =====
+    #[test]
+    fun test_case_sensitivity_explicit() {
+        let mut v = vector::empty<String>();
+        vector::push_back(&mut v, string::utf8(b"test"));
+        vector::push_back(&mut v, string::utf8(b"TEST"));
+        vector::push_back(&mut v, string::utf8(b"Test"));
+        assert!(vectors::check_valid_outcomes(v, 5), 0); // Confirming case sensitivity
+    }
 }

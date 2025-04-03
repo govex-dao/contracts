@@ -1,4 +1,8 @@
 module futarchy::swap {
+    // === Introduction ===
+    // Defines entry methods for swaping and combining coins and conditional tokens
+
+    // === Imports ===
     use sui::clock::{Clock};
     use futarchy::market_state::{MarketState};
     use futarchy::coin_escrow::{Self, TokenEscrow};
@@ -7,16 +11,16 @@ module futarchy::swap {
     use futarchy::proposal::{Self, Proposal};
     use sui::coin::{Coin};
     
-    // ====== Error Codes ======
+    // === Errors ===
     const EINVALID_OUTCOME: u64 = 1201;
     const EWRONG_TOKEN_TYPE: u64 = 1202;
     const EWRONG_OUTCOME: u64 = 1203;
     const EINVALID_STATE: u64 = 1204;
 
-    // ======== Constants ========
+    // === Constants ===
     const STATE_TRADING: u8 = 1;
   
-    // ====== AMM Operations ======
+    // ==== AMM Operations ====
     fun swap_asset_to_stable<AssetType, StableType>(
         proposal: &mut Proposal<AssetType, StableType>,
         state: &MarketState,
@@ -122,8 +126,6 @@ module futarchy::swap {
         transfer::public_transfer(asset_token, sender);
     }
 
-    //// DONE ==============================
-
     #[allow(lint(self_transfer))]
     public entry fun create_and_swap_stable_to_asset_with_existing<AssetType, StableType>(
         proposal: &mut Proposal<AssetType, StableType>,
@@ -144,7 +146,7 @@ module futarchy::swap {
         // Merge existing token if present
 
         assert!(token::outcome(&existing_token) == (outcome_idx as u8), EWRONG_OUTCOME);
-        assert!(token::asset_type(&existing_token) == 1, EWRONG_TOKEN_TYPE); // 1 for asset token
+        assert!(token::asset_type(&existing_token) == 1, EWRONG_TOKEN_TYPE); 
 
         let mut existing_token_in_vector = vector::empty();
         vector::push_back(&mut existing_token_in_vector, existing_token);
@@ -193,7 +195,7 @@ module futarchy::swap {
 
 
         assert!(token::outcome(&existing_token) == (outcome_idx as u8), EWRONG_OUTCOME);
-        assert!(token::asset_type(&existing_token) == 0, EWRONG_TOKEN_TYPE); // 1 for stable token
+        assert!(token::asset_type(&existing_token) == 0, EWRONG_TOKEN_TYPE);
 
         let mut existing_token_in_vector = vector::empty();
         vector::push_back(&mut existing_token_in_vector, existing_token);

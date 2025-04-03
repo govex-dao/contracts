@@ -272,7 +272,6 @@ module futarchy::coin_escrow {
             i = i + 1;
         };
         
-        vector::destroy_empty(outcomes_seen);
         amount
     }
 

@@ -1,10 +1,17 @@
 module futarchy::conditional_token {
+    // === Introduction ===
+    // This is an implementation of a custom psuedo coin.
+    // New coins (types) can't be created dynamically in Move
+
+    // Long term using a table will likely be more scalable
+    // market_amounts: Table<(ID, ID), Table<address, u64>>,
+    
+    // === Imports ===
     use sui::clock::{Self, Clock};
     use sui::event;
     use futarchy::market_state::{Self};
 
-    // ======== Error Constants ========
-
+    // === Errors ===
     const EWRONG_MARKET: u64 = 601;
     const EWRONG_TOKEN_TYPE: u64 = 602;
     const EWRONG_OUTCOME: u64 = 603;
@@ -15,31 +22,46 @@ module futarchy::conditional_token {
     const ENONZERO_BALANCE: u64 = 608;
     const EINVALID_ASSET_TYPE: u64 = 609;
 
-    // could use SVG in display object url path
-    // like walrus airdrop NFT
+    // === Structs ===
+    // Supply tracking object for a specific conditional token type
+    public struct Supply has key, store {
+        id: UID,
+        market_id: ID,
+        asset_type: u8,
+        outcome: u8,
+        total_supply: u64
+    }
 
-    /// Events
+    // The conditional token itself
+    public struct ConditionalToken has key, store {
+        id: UID,
+        market_id: ID,
+        asset_type: u8,    // 0 for asset, 1 for stable
+        outcome: u8,       // outcome index
+        balance: u64
+    }
+
+    // === Events ===
     public struct TokenMinted has copy, drop {
-        id: ID,  // token ID
+        id: ID,
         market_id: ID,
         asset_type: u8,
         outcome: u8,
         amount: u64,
         recipient: address,
-        timestamp: u64  // new field
+        timestamp: u64  
     }
 
     public struct TokenBurned has copy, drop {
-        id: ID,         // token ID being burned - new field
+        id: ID,
         market_id: ID,
         asset_type: u8,
         outcome: u8,
         amount: u64,
-        sender: address, // new field
-        timestamp: u64   // new field
+        sender: address, 
+        timestamp: u64   
     }
 
-    // New events needed
     public struct TokenSplit has copy, drop {
         original_token_id: ID,
         new_token_id: ID,
@@ -52,7 +74,6 @@ module futarchy::conditional_token {
         timestamp: u64
     }
 
-
     public struct TokenMergeMany has copy, drop {
         base_token_id: ID,
         merged_token_ids: vector<ID>,
@@ -64,27 +85,8 @@ module futarchy::conditional_token {
         owner: address,
         timestamp: u64
     }
-    
-    /// Supply tracking object for a specific conditional token type
-    public struct Supply has key, store {
-        id: UID,
-        market_id: ID,
-        asset_type: u8,
-        outcome: u8,
-        total_supply: u64
-    }
-
-    /// The conditional token itself
-    public struct ConditionalToken has key, store {
-        id: UID,
-        market_id: ID,
-        asset_type: u8,    // 0 for asset, 1 for stable
-        outcome: u8,       // outcome index
-        balance: u64
-    }
 
     // ======== Supply Functions ========
-
     public fun new_supply(
         state: &market_state::MarketState,
         asset_type: u8,
@@ -114,14 +116,13 @@ module futarchy::conditional_token {
         };
     }
     
-    /// Destroys a ConditionalToken. The token's balance must be zero.
+    // ======== Token Functions ========
+     // Destroys a ConditionalToken. The token's balance must be zero.
     public fun destroy(token: ConditionalToken) {
         let ConditionalToken { id, market_id: _, asset_type: _, outcome: _, balance } = token;
         assert!(balance == 0, ENONZERO_BALANCE);
         object::delete(id);
     }
-
-    // ======== Token Functions ========
 
     public fun split(
         token: &mut ConditionalToken,
@@ -314,7 +315,7 @@ module futarchy::conditional_token {
         token
     }
 
-    // ======== Getters ========
+    // === Getters ===
 
     public fun market_id(token: &ConditionalToken): ID {
         token.market_id

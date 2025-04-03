@@ -8,6 +8,7 @@ module futarchy::fee_tests {
     
     // Test coin type for stable coin tests
     public struct USDC has drop {}
+    public struct USDT has drop {}
     
     // Test constants (matching those from the fee module)
     const DEFAULT_DAO_CREATION_FEE: u64 = 10_000;
@@ -40,6 +41,11 @@ module futarchy::fee_tests {
     // Helper to create USDC coins
     fun mint_usdc(amount: u64, ctx: &mut tx_context::TxContext): Coin<USDC> {
         coin::mint_for_testing<USDC>(amount, ctx)
+    }
+
+    // Helper to create USDT coins (add this near your other mint functions)
+    fun mint_usdt(amount: u64, ctx: &mut tx_context::TxContext): Coin<USDT> {
+        coin::mint_for_testing<USDT>(amount, ctx)
     }
     
     // Test fee manager initialization
@@ -487,6 +493,158 @@ module futarchy::fee_tests {
             
             test_scenario::return_shared(fee_manager);
             test_scenario::return_to_address(admin, admin_cap);
+        };
+        
+        // Clean up
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        clock::destroy_for_testing(clock);
+        
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_multiple_stable_coin_types() {
+        let (mut scenario, admin) = test_init();
+        let clock = create_clock(&mut scenario);
+        
+        // Deposit both USDC and USDT
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let ctx = test_scenario::ctx(&mut scenario);
+            
+            let id = object::id_from_address(@0xABC);
+            
+            // Deposit USDC
+            let usdc = mint_usdc(1000, ctx);
+            let usdc_balance = coin::into_balance(usdc);
+            fee::deposit_stable_fees<USDC>(&mut fee_manager, usdc_balance, id, &clock);
+            
+            // Need to get a new ctx for the second minting
+            let ctx = test_scenario::ctx(&mut scenario);
+            
+            // Deposit USDT
+            let usdt = mint_usdt(2000, ctx);
+            let usdt_balance = coin::into_balance(usdt);
+            fee::deposit_stable_fees<USDT>(&mut fee_manager, usdt_balance, id, &clock);
+            
+            // Verify both balances
+            assert!(fee::get_stable_fee_balance<USDC>(&fee_manager) == 1000, 0);
+            assert!(fee::get_stable_fee_balance<USDT>(&fee_manager) == 2000, 0);
+            
+            test_scenario::return_shared(fee_manager);
+        };
+        
+        // Withdraw both types of stable fees
+        test_scenario::next_tx(&mut scenario, admin);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let admin_cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, admin);
+            
+            // Withdraw USDC
+            fee::withdraw_stable_fees<USDC>(&mut fee_manager, &admin_cap, &clock, test_scenario::ctx(&mut scenario));
+            assert!(fee::get_stable_fee_balance<USDC>(&fee_manager) == 0, 0);
+            
+            // Withdraw USDT
+            fee::withdraw_stable_fees<USDT>(&mut fee_manager, &admin_cap, &clock, test_scenario::ctx(&mut scenario));
+            assert!(fee::get_stable_fee_balance<USDT>(&fee_manager) == 0, 0);
+            
+            test_scenario::return_shared(fee_manager);
+            test_scenario::return_to_address(admin, admin_cap);
+        };
+        
+        // Verify admin received both coin types
+        test_scenario::next_tx(&mut scenario, admin);
+        {
+            let usdc_coins = test_scenario::take_from_address<Coin<USDC>>(&scenario, admin);
+            let usdt_coins = test_scenario::take_from_address<Coin<USDT>>(&scenario, admin);
+            
+            assert!(coin::value(&usdc_coins) == 1000, 0);
+            assert!(coin::value(&usdt_coins) == 2000, 0);
+            
+            test_scenario::return_to_address(admin, usdc_coins);
+            test_scenario::return_to_address(admin, usdt_coins);
+        };
+        
+        // Clean up
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        clock::destroy_for_testing(clock);
+        
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_zero_balance_withdraw() {
+        let (mut scenario, admin) = test_init();
+        let clock = create_clock(&mut scenario);
+        
+        // First deposit some stable fees
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let ctx = test_scenario::ctx(&mut scenario);
+            
+            let id = object::id_from_address(@0xABC);
+            let usdc = mint_usdc(1000, ctx);
+            let usdc_balance = coin::into_balance(usdc);
+            
+            fee::deposit_stable_fees<USDC>(&mut fee_manager, usdc_balance, id, &clock);
+            test_scenario::return_shared(fee_manager);
+        };
+        
+        // Withdraw all stable fees
+        test_scenario::next_tx(&mut scenario, admin);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let admin_cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, admin);
+            
+            fee::withdraw_stable_fees<USDC>(&mut fee_manager, &admin_cap, &clock, test_scenario::ctx(&mut scenario));
+            assert!(fee::get_stable_fee_balance<USDC>(&fee_manager) == 0, 0);
+            
+            test_scenario::return_shared(fee_manager);
+            test_scenario::return_to_address(admin, admin_cap);
+        };
+        
+        // Try to withdraw again when balance is already zero
+        // This should work without errors (just not transfer any coins)
+        test_scenario::next_tx(&mut scenario, admin);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let admin_cap = test_scenario::take_from_address<FeeAdminCap>(&scenario, admin);
+            
+            // This should be a no-op since balance is already zero
+            fee::withdraw_stable_fees<USDC>(&mut fee_manager, &admin_cap, &clock, test_scenario::ctx(&mut scenario));
+            assert!(fee::get_stable_fee_balance<USDC>(&fee_manager) == 0, 0);
+            
+            test_scenario::return_shared(fee_manager);
+            test_scenario::return_to_address(admin, admin_cap);
+        };
+        
+        // Clean up
+        test_scenario::next_tx(&mut scenario, ADMIN);
+        clock::destroy_for_testing(clock);
+        
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = fee::EINVALID_PAYMENT)]
+    fun test_payment_amount_too_large() {
+        let (mut scenario, _admin) = test_init();
+        let clock = create_clock(&mut scenario);
+        
+        test_scenario::next_tx(&mut scenario, USER);
+        {
+            let mut fee_manager = test_scenario::take_shared<FeeManager>(&scenario);
+            let ctx = test_scenario::ctx(&mut scenario);
+            
+            // Too much payment (more than required)
+            let payment = mint_sui(DEFAULT_DAO_CREATION_FEE + 100, ctx);
+            
+            // This should fail because payment amount > required fee
+            fee::deposit_dao_creation_payment(&mut fee_manager, payment, &clock, ctx);
+            
+            test_scenario::return_shared(fee_manager);
         };
         
         // Clean up
