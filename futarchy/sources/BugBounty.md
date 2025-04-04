@@ -14,6 +14,7 @@ Govex Bug Bounty-1
 - Include a brief description of the bug and a suggested fix to claim
 - The entire report must be in plain text, no PDFs or files or external links are alowed in the report.
 - Only critical bugs are eligable for a bounty. 
-- Critical is definied here as bugs that are very likely to result in significant loss of user funds. Unprofitable attacks will not be considered critical.
+- Critical is definied here as bugs that are very likely to result in significant loss of user funds. 
+- Unprofitable attacks will not be considered critical.
 
 Govex team reserves right to reject or deny any bug bounty claim, but will endeavour to be fair. 
