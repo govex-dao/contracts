@@ -46,7 +46,7 @@ module futarchy::dao {
     const METADATA_MAX_LENGTH: u64 = 1024;
     const DETAILS_MAX_LENGTH: u64 = 16384; // 16KB
     const MIN_OUTCOMES: u64 = 2;
-    const MAX_OUTCOMES: u64 = 2;
+    const MAX_OUTCOMES: u64 = 3;
     const MAX_RESULT_LENGTH: u64 = 1024;
     const MIN_AMM_SAFE_AMOUNT: u64 = 1000; // under 50 swap will have significant slippage
     const MAX_DECIMALS: u8 = 21; // Common max for most token pairs

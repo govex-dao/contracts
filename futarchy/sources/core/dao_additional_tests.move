@@ -1005,7 +1005,7 @@ module futarchy::dao_additional_tests {
             );
         };
 
-        // Try to create a proposal with invalid outcome count (3, but maximum is 2)
+        // Try to create a proposal with invalid outcome count (3, but maximum is 3)
         test_scenario::next_tx(&mut scenario, admin);
         {
             let mut dao = test_scenario::take_shared<DAO>(&scenario);
@@ -1017,7 +1017,15 @@ module futarchy::dao_additional_tests {
             let outcome_messages = vector[
                 string::utf8(b"Reject"),
                 string::utf8(b"Accept"),
-                string::utf8(b"Maybe")  // Third outcome, which exceeds MAX_OUTCOMES
+                string::utf8(b"3"),
+                string::utf8(b"4"),
+                string::utf8(b"5"),
+                string::utf8(b"6"),
+                string::utf8(b"7"),
+                string::utf8(b"8"),
+                string::utf8(b"9"),
+                string::utf8(b"10"),
+                string::utf8(b"11"),
             ];
 
             // Try to create a proposal with too many outcomes - should fail
@@ -1025,7 +1033,7 @@ module futarchy::dao_additional_tests {
                 &mut dao,
                 &mut fee_manager,
                 payment,
-                3, // outcome_count exceeds MAX_OUTCOMES
+                11, // outcome_count exceeds MAX_OUTCOMES
                 asset_coin,
                 stable_coin,
                 string::utf8(b"Test Proposal"),
